@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#070910">
+  <title>SANCUWEK CEO · Admin</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="admin-page">
+<audio id="paymentSound" src="/payment-alert.wav" preload="auto"></audio>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <!-- LOGIN GATE -->
+  <section id="loginGate" class="login-gate">
+    <div class="login-card glass">
+      <div class="login-brand">
+        <div class="logo-mark big">S</div>
+        <div>
+          <div class="brand-name">SANCUWEK CEO</div>
+          <div class="brand-sub">Admin Control Panel</div>
+        </div>
+      </div>
+
+      <div class="login-copy">
+        <div class="section-kicker">PRIVATE ACCESS</div>
+        <h1>Masuk sebagai admin</h1>
+        <p>Dashboard tidak dapat dibuka sebelum password admin diverifikasi.</p>
+      </div>
+
+      <div class="field">
+        <label>Password admin</label>
+        <div class="password-wrap">
+          <input id="loginPassword" type="password" placeholder="Masukkan password">
+          <button id="togglePassword" type="button" class="icon-btn">LIHAT</button>
+        </div>
+      </div>
+
+      <button id="loginBtn" class="primary-btn full-btn">
+        <span>MASUK DASHBOARD</span>
+        <span>→</span>
+      </button>
+
+      <div id="loginMsg" class="msg"></div>
+      <div class="login-note">Password awal versi baru: <strong>admin123</strong>, kecuali sebelumnya sudah kamu ubah pada folder ini.</div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <main id="dashboard" class="admin-container hidden">
+    <header class="admin-header glass">
+      <div class="brand">
+        <div class="logo-mark">S</div>
+        <div>
+          <div class="brand-name">SANCUWEK CEO</div>
+          <div class="brand-sub">Admin Dashboard</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="notifBtn" class="ghost-btn">AKTIFKAN NOTIF</button>
+        <a class="ghost-btn" href="/" target="_blank">LIHAT WEB</a>
+        <button id="logoutBtn" class="danger-outline">LOGOUT</button>
+      </div>
+    </header>
+
+    <div class="dashboard-grid">
+      <aside class="sidebar glass">
+        <div class="side-caption">MENU</div>
+        <button class="side-link active" data-target="donationSection">▦ <span>Donasi Masuk</span></button>
+        <button class="side-link" data-target="qrisSection">◇ <span>Ubah QRIS</span></button>
+        <button class="side-link" data-target="passwordSection">⚙ <span>Ubah Password</span></button>
+      </aside>
+
+      <section class="dashboard-content">
+        <div class="welcome-row">
+          <div>
+            <div class="section-kicker">CONTROL CENTER</div>
+            <h1>Dashboard Admin</h1>
+            <p>Kelola bukti pembayaran, QRIS, status, dan keamanan akun admin.</p>
+          </div>
+          <button id="refreshBtn" class="ghost-btn">REFRESH DATA</button>
+        </div>
+
+        <div id="notifInfo" class="notif-info glass">
+          <div class="notif-copy">
+            <strong>Notifikasi pembayaran</strong>
+            <span id="notifStatus">Push notification belum diaktifkan</span>
+            <span id="soundStatus">Suara belum aktif</span>
+            <div class="live-dot-wrap"><span class="status-dot"></span> PUSH READY</div>
+          </div>
+          <div class="notif-buttons">
+            <button id="notifCardBtn" class="primary-btn notif-action">AKTIFKAN PUSH</button>
+            <button id="testNotifBtn" class="ghost-btn notif-action">TEST PUSH</button>
+            <button id="soundBtn" class="ghost-btn notif-action">AKTIFKAN SUARA</button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card glass">
+            <div class="stat-label">Total Data</div>
+            <div class="stat-value" id="sCount">0</div>
+            <div class="stat-meta">Semua submission</div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-label">Total Nominal</div>
+            <div class="stat-value compact" id="sAmount">Rp0</div>
+            <div class="stat-meta">Akumulasi transfer</div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-label">Menunggu</div>
+            <div class="stat-value" id="sPending">0</div>
+            <div class="stat-meta">Belum diverifikasi</div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-label">Selesai</div>
+            <div class="stat-value" id="sDone">0</div>
+            <div class="stat-meta">Sudah diproses</div>
+          </div>
+        </div>
+
+        <section id="donationSection" class="panel glass">
+          <div class="panel-head">
+            <div>
+              <div class="section-kicker">SUBMISSIONS</div>
+              <h2>Donasi masuk</h2>
+            </div>
+            <div class="panel-badge">LIVE DATA</div>
+          </div>
+          <div id="list" class="donation-list">
+            <div class="empty-state">Belum ada data untuk ditampilkan.</div>
+          </div>
+        </section>
+
+        <section id="qrisSection" class="panel glass">
+          <div class="panel-head">
+            <div>
+              <div class="section-kicker">PAYMENT QR</div>
+              <h2>Ubah QRIS</h2>
+            </div>
+            <div class="panel-badge">ADMIN ONLY</div>
+          </div>
+
+          <div class="qris-admin-layout">
+            <div class="admin-qris-preview">
+              <img id="adminQrisPreview" src="/api/qris" alt="QRIS saat ini">
+            </div>
+
+            <div class="qris-controls">
+              <p class="muted">Pilih gambar QRIS baru. Setelah disimpan, QRIS di halaman utama langsung ikut berubah.</p>
+              <div class="field">
+                <label>File QRIS baru</label>
+                <input id="qrisFile" type="file" accept="image/jpeg,image/png,image/webp">
+              </div>
+              <button id="saveQrisBtn" class="primary-btn full-btn">SIMPAN QRIS BARU</button>
+              <div id="qrisMsg" class="msg"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="passwordSection" class="panel glass">
+          <div class="panel-head">
+            <div>
+              <div class="section-kicker">SECURITY</div>
+              <h2>Ubah password admin</h2>
+            </div>
+            <div class="panel-badge">SECURE</div>
+          </div>
+
+          <div class="password-grid">
+            <div class="field">
+              <label>Password baru</label>
+              <input id="newPassword" type="password" placeholder="Minimal 6 karakter">
+            </div>
+            <div class="field">
+              <label>Ulangi password baru</label>
+              <input id="confirmPassword" type="password" placeholder="Masukkan ulang password">
+            </div>
+          </div>
+
+          <button id="changePasswordBtn" class="primary-btn">UBAH PASSWORD</button>
+          <div id="passwordMsg" class="msg"></div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+<script>
+let adminPassword = "";
+let pushSubscription = null;
+let lastDonationCount = 0;
+let soundEnabled = false;
+let knownDonationIds = new Set();
+let realtimeTimer = null;
+
+const loginGate = document.getElementById("loginGate");
+const dashboard = document.getElementById("dashboard");
+const loginPassword = document.getElementById("loginPassword");
+const loginMsg = document.getElementById("loginMsg");
+
+
+
+
+function enableWebsiteSound(){
+  const audio = document.getElementById("paymentSound");
+  audio.play().then(()=>{
+    audio.pause();
+    audio.currentTime = 0;
+    soundEnabled = true;
+    document.getElementById("soundStatus").textContent = "Suara aktif";
+  }).catch(()=>{
+    alert("Tekan tombol lagi atau izinkan suara browser.");
+  });
+}
+
+function playPaymentSound(){
+  if(!soundEnabled) return;
+  const audio = document.getElementById("paymentSound");
+  audio.currentTime = 0;
+  audio.play().catch(()=>{});
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+}
+
+async function getServiceWorkerRegistration() {
+  if (!("serviceWorker" in navigator)) {
+    throw new Error("Browser tidak mendukung service worker.");
+  }
+  return await navigator.serviceWorker.register("/sw.js");
+}
+
+async function updateNotifStatus() {
+  const status = document.getElementById("notifStatus");
+  const btn = document.getElementById("notifBtn");
+  const cardBtn = document.getElementById("notifCardBtn");
+
+  function setButtons(text, disabled=false) {
+    if (btn) {
+      btn.textContent = text;
+      btn.disabled = disabled;
+    }
+    if (cardBtn) {
+      cardBtn.textContent = text;
+      cardBtn.disabled = disabled;
+    }
+  }
+
+  if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+    status.textContent = "Push notification tidak didukung browser ini";
+    setButtons("NOTIF TIDAK DIDUKUNG", true);
+    return;
+  }
+
+  if (Notification.permission === "denied") {
+    status.textContent = "Notifikasi diblokir di pengaturan browser";
+    setButtons("NOTIF DIBLOKIR");
+    return;
+  }
+
+  try {
+    const reg = await navigator.serviceWorker.getRegistration("/sw.js");
+    const sub = reg ? await reg.pushManager.getSubscription() : null;
+    pushSubscription = sub;
+
+    if (Notification.permission === "granted" && sub) {
+      status.textContent = "Push aktif — pembayaran baru tetap bisa muncul saat tab admin ditutup";
+      setButtons("PUSH AKTIF");
+    } else {
+      status.textContent = "Push notification belum diaktifkan";
+      setButtons("AKTIFKAN PUSH");
+    }
+  } catch {
+    status.textContent = "Push notification belum diaktifkan";
+    setButtons("AKTIFKAN PUSH");
+  }
+}
+
+
+async function testPushNotification() {
+  try {
+    const reg = await navigator.serviceWorker.getRegistration("/sw.js");
+    if (!reg) throw new Error("Service worker belum aktif.");
+
+    await reg.showNotification("SANCUWEK CEO TEST", {
+      body: "Ini tes suara dan getaran notifikasi.",
+      icon: "/push-icon.svg",
+      badge: "/push-icon.svg",
+      requireInteraction: true,
+      vibrate: [300,100,300],
+      silent: false
+    });
+  } catch(err) {
+    alert(err.message);
+  }
+}
+
+async function requestNotificationPermission() {
+  if (!adminPassword) return;
+
+  try {
+    if (!("Notification" in window)) throw new Error("Browser tidak mendukung notifikasi.");
+
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      await updateNotifStatus();
+      throw new Error("Izin notifikasi belum diberikan.");
+    }
+
+    const reg = await getServiceWorkerRegistration();
+    let sub = await reg.pushManager.getSubscription();
+
+    if (!sub) {
+      const keyData = await adminApi("/api/push/public-key");
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(keyData.publicKey)
+      });
+    }
+
+    await adminApi("/api/admin/push/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subscription: sub.toJSON() })
+    });
+
+    pushSubscription = sub;
+
+    if (reg && reg.showNotification) {
+      await reg.showNotification("SANCUWEK CEO", {
+        body: "Push notification pembayaran sudah aktif."
+      });
+    }
+
+    await updateNotifStatus();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+
+function rupiah(n) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0
+  }).format(n);
+}
+
+function dateID(s) {
+  return new Date(s).toLocaleString("id-ID");
+}
+
+function esc(s="") {
+  return String(s).replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
+async function adminApi(url, opts = {}) {
+  const headers = Object.assign({}, opts.headers || {}, {
+    "x-admin-password": adminPassword
+  });
+
+  const res = await fetch(url, { ...opts, headers });
+  const data = await res.json();
+
+  if (res.status === 401) {
+    logout(false);
+    throw new Error("Sesi admin tidak valid. Silakan login kembali.");
+  }
+
+  if (!res.ok) throw new Error(data.error || "Request gagal.");
+  return data;
+}
+
+async function login() {
+  loginMsg.className = "msg";
+  const password = loginPassword.value;
+
+  if (!password) {
+    loginMsg.textContent = "Masukkan password admin.";
+    loginMsg.className = "msg err show";
+    return;
+  }
+
+  const btn = document.getElementById("loginBtn");
+  btn.disabled = true;
+  btn.querySelector("span:first-child").textContent = "MEMERIKSA...";
+
+  try {
+    const res = await fetch("/api/admin/stats", {
+      headers: { "x-admin-password": password }
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || "Password salah.");
+
+    adminPassword = password;
+    sessionStorage.setItem("sancuwek_admin_session", password);
+    loginGate.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+    loginPassword.value = "";
+    await loadAll();
+    await updateNotifStatus();
+  } catch (err) {
+    loginMsg.textContent = err.message;
+    loginMsg.className = "msg err show";
+  } finally {
+    btn.disabled = false;
+    btn.querySelector("span:first-child").textContent = "MASUK DASHBOARD";
+  }
+}
+
+function logout(showGate = true) {
+  stopRealtimeChecker();
+  adminPassword = "";
+  sessionStorage.removeItem("sancuwek_admin_session");
+  dashboard.classList.add("hidden");
+  if (showGate) loginGate.classList.remove("hidden");
+}
+
+
+async function checkNewPaymentSound(data){
+  if(lastDonationCount && data.length > lastDonationCount){
+    playPaymentSound();
+  }
+  lastDonationCount = data.length;
+}
+
+
+async function startRealtimeChecker(){
+  try{
+    const first = await adminApi("/api/admin/donations");
+    knownDonationIds = new Set(first.map(x => x.id));
+  }catch{}
+
+  if(realtimeTimer) clearInterval(realtimeTimer);
+
+  realtimeTimer = setInterval(async ()=>{
+    try{
+      const data = await adminApi("/api/admin/donations");
+
+      const newItems = data.filter(x => !knownDonationIds.has(x.id));
+
+      if(newItems.length){
+        newItems.forEach(item=>{
+          playPaymentSound();
+
+          const popup = document.createElement("div");
+          popup.className = "payment-popup";
+          popup.innerHTML = `
+            <strong>Pembayaran Baru Masuk</strong>
+            <span>ID FF: ${item.ffId}</span>
+            <span>Nominal: Rp${Number(item.amount).toLocaleString("id-ID")}</span>
+          `;
+          document.body.appendChild(popup);
+
+          setTimeout(()=>{
+            popup.remove();
+          },5000);
+        });
+
+        await loadAll();
+      }
+
+      knownDonationIds = new Set(data.map(x=>x.id));
+
+    }catch{}
+  },3000);
+}
+
+function stopRealtimeChecker(){
+  if(realtimeTimer){
+    clearInterval(realtimeTimer);
+    realtimeTimer = null;
+  }
+}
+
+async function loadAll() {
+  const [data, stats] = await Promise.all([
+    adminApi("/api/admin/donations"),
+    adminApi("/api/admin/stats")
+  ]);
+
+  document.getElementById("sCount").textContent = stats.count;
+  document.getElementById("sAmount").textContent = rupiah(stats.totalAmount);
+  document.getElementById("sPending").textContent = stats.pending;
+  document.getElementById("sDone").textContent = stats.done;
+
+  renderDonations(data);
+  checkNewPaymentSound(data);
+}
+
+function renderDonations(data) {
+  const list = document.getElementById("list");
+
+  if (!data.length) {
+    list.innerHTML = '<div class="empty-state">Belum ada bukti transfer yang masuk.</div>';
+    return;
+  }
+
+  list.innerHTML = data.map(d => `
+    <article class="donation-card">
+      <div class="donation-top">
+        <div>
+          <div class="donation-id">ID FF</div>
+          <div class="donation-title">${esc(d.ffId)}</div>
+        </div>
+        <div class="donation-amount">${rupiah(d.amount)}</div>
+      </div>
+
+      <div class="donation-meta">
+        <div>
+          <span>Status</span>
+          <strong>${esc(d.status)}</strong>
+        </div>
+        <div>
+          <span>Waktu</span>
+          <strong>${dateID(d.createdAt)}</strong>
+        </div>
+        <div>
+          <span>Catatan</span>
+          <strong>${esc(d.note || "-")}</strong>
+        </div>
+      </div>
+
+      <div class="proof-wrap">
+        <img src="${d.proof}" alt="Bukti transfer">
+      </div>
+
+      <div class="donation-actions">
+        <select id="status-${d.id}">
+          <option ${d.status==="Menunggu"?"selected":""}>Menunggu</option>
+          <option ${d.status==="Dicek"?"selected":""}>Dicek</option>
+          <option ${d.status==="Selesai"?"selected":""}>Selesai</option>
+        </select>
+        <button class="primary-btn small" onclick="updateStatus('${d.id}')">SIMPAN</button>
+        <button class="danger-btn small" onclick="removeItem('${d.id}')">HAPUS</button>
+      </div>
+    </article>
+  `).join("");
+}
+
+async function updateStatus(id) {
+  const status = document.getElementById("status-" + id).value;
+  await adminApi("/api/admin/donations/" + id, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status })
+  });
+  await loadAll();
+}
+
+async function removeItem(id) {
+  if (!confirm("Hapus data donasi ini?")) return;
+  await adminApi("/api/admin/donations/" + id, { method: "DELETE" });
+  await loadAll();
+}
+
+async function updateQris() {
+  const input = document.getElementById("qrisFile");
+  const box = document.getElementById("qrisMsg");
+  box.className = "msg";
+
+  if (!input.files[0]) {
+    box.textContent = "Pilih gambar QRIS terlebih dahulu.";
+    box.className = "msg err show";
+    return;
+  }
+
+  const fd = new FormData();
+  fd.append("qris", input.files[0]);
+
+  try {
+    const res = await fetch("/api/admin/qris", {
+      method: "POST",
+      headers: { "x-admin-password": adminPassword },
+      body: fd
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Gagal mengubah QRIS.");
+
+    document.getElementById("adminQrisPreview").src = "/api/qris?t=" + Date.now();
+    box.textContent = "QRIS berhasil diperbarui.";
+    box.className = "msg ok show";
+    input.value = "";
+  } catch (err) {
+    box.textContent = err.message;
+    box.className = "msg err show";
+  }
+}
+
+async function changePassword() {
+  const newPassword = document.getElementById("newPassword").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+  const box = document.getElementById("passwordMsg");
+  box.className = "msg";
+
+  try {
+    const data = await adminApi("/api/admin/change-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newPassword, confirmPassword })
+    });
+
+    adminPassword = newPassword;
+    sessionStorage.setItem("sancuwek_admin_session", newPassword);
+
+    document.getElementById("newPassword").value = "";
+    document.getElementById("confirmPassword").value = "";
+    box.textContent = data.message;
+    box.className = "msg ok show";
+  } catch (err) {
+    box.textContent = err.message;
+    box.className = "msg err show";
+  }
+}
+
+document.getElementById("loginBtn").addEventListener("click", login);
+loginPassword.addEventListener("keydown", e => {
+  if (e.key === "Enter") login();
+});
+
+document.getElementById("togglePassword").addEventListener("click", () => {
+  const isPassword = loginPassword.type === "password";
+  loginPassword.type = isPassword ? "text" : "password";
+  document.getElementById("togglePassword").textContent = isPassword ? "SEMBUNYI" : "LIHAT";
+});
+
+document.getElementById("notifBtn").addEventListener("click", requestNotificationPermission);
+document.getElementById("notifCardBtn").addEventListener("click", requestNotificationPermission);
+document.getElementById("testNotifBtn").addEventListener("click", testPushNotification);
+document.getElementById("soundBtn").addEventListener("click", enableWebsiteSound);
+document.getElementById("logoutBtn").addEventListener("click", () => logout(true));
+document.getElementById("refreshBtn").addEventListener("click", loadAll);
+document.getElementById("saveQrisBtn").addEventListener("click", updateQris);
+document.getElementById("changePasswordBtn").addEventListener("click", changePassword);
+
+updateNotifStatus().catch(()=>{});
+
+document.querySelectorAll(".side-link").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".side-link").forEach(x => x.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.target).scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+});
+
+(async () => {
+  const saved = sessionStorage.getItem("sancuwek_admin_session");
+  if (!saved) return;
+
+  try {
+    const res = await fetch("/api/admin/stats", {
+      headers: { "x-admin-password": saved }
+    });
+    if (!res.ok) {
+      sessionStorage.removeItem("sancuwek_admin_session");
+      return;
+    }
+
+    adminPassword = saved;
+    loginGate.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+    await loadAll();
+    await updateNotifStatus();
+  } catch {}
+})();
+</script>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(function(){
+  if(typeof io !== "undefined"){
+    const socket = io();
+
+    socket.on("new-payment", function(data){
+      playPaymentSound();
+
+      const popup = document.createElement("div");
+      popup.className = "payment-popup alarm";
+      popup.innerHTML =
+        "<strong>🔔 PEMBAYARAN BARU</strong>" +
+        "<span>ID FF: "+(data.ffId||"-")+"</span>" +
+        "<span>Nominal: Rp"+Number(data.amount||0).toLocaleString("id-ID")+"</span>" +
+        "<button onclick='this.parentElement.remove()'>TERIMA</button>";
+
+      document.body.appendChild(popup);
+
+      if(navigator.vibrate){
+        navigator.vibrate([300,100,300,100,300]);
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

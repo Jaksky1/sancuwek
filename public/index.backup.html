@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#070910">
+  <title>SANCUWEK CEO</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="public-page">
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <main class="container public-container">
+    <header class="topbar public-topbar">
+      <div class="brand">
+        <div class="logo-mark">S</div>
+        <div>
+          <div class="brand-name">SANCUWEK CEO</div>
+          <div class="brand-sub">Payment Verification</div>
+        </div>
+      </div>
+      <div class="status-pill"><span class="status-dot"></span> QRIS ACTIVE</div>
+    </header>
+
+    <section class="hero-grid">
+      <div class="glass hero-copy">
+        <div class="eyebrow">BAYWAN 11 · 5K WIN FB</div>
+        <h1>Bayar cepat.<br><span>Verifikasi mudah.</span></h1>
+        <p class="hero-description">
+          Transfer langsung melalui QRIS. Setelah pembayaran selesai, kirim bukti transfer dan ID Free Fire kamu agar admin dapat melakukan pengecekan.
+        </p>
+
+        <div class="feature-row">
+          <div class="mini-feature">
+            <div class="mini-icon">01</div>
+            <div>
+              <strong>Scan QRIS</strong>
+              <span>Bayar dari aplikasi apa pun yang mendukung QRIS.</span>
+            </div>
+          </div>
+          <div class="mini-feature">
+            <div class="mini-icon">02</div>
+            <div>
+              <strong>Kirim Data</strong>
+              <span>Masukkan ID FF, nominal, dan bukti transfer.</span>
+            </div>
+          </div>
+          <div class="mini-feature">
+            <div class="mini-icon">03</div>
+            <div>
+              <strong>Tunggu Verifikasi</strong>
+              <span>Admin akan mengecek data yang kamu kirim.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="glass qris-card">
+        <div class="qris-card-head">
+          <div>
+            <div class="section-kicker">PAYMENT</div>
+            <h2>Scan QRIS</h2>
+          </div>
+          <div class="secure-badge">AMAN</div>
+        </div>
+
+        <div class="qris-frame">
+          <img id="publicQris" src="/api/qris" alt="QRIS SANCUWEK CEO">
+        </div>
+        <p class="qris-help">Pastikan nama tujuan pembayaran sesuai sebelum melakukan transfer.</p>
+      </aside>
+    </section>
+
+    <section class="glass form-panel">
+      <div class="form-heading">
+        <div>
+          <div class="section-kicker">VERIFIKASI</div>
+          <h2>Kirim bukti pembayaran</h2>
+        </div>
+        <div class="form-tag">Manual Check</div>
+      </div>
+
+      <form id="donationForm">
+        <div class="field-grid">
+          <div class="field">
+            <label>ID Free Fire *</label>
+            <input name="ffId" inputmode="numeric" placeholder="Masukkan ID Free Fire" required>
+          </div>
+          <div class="field">
+            <label>Nominal transfer *</label>
+            <input name="amount" inputmode="numeric" placeholder="Contoh: 5000" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Bukti transfer *</label>
+          <div class="file-box">
+            <input id="proofInput" name="proof" type="file" accept="image/jpeg,image/png,image/webp" required>
+            <div class="file-copy">
+              <strong id="fileName">Pilih gambar bukti transfer</strong>
+              <span>JPG, PNG, WEBP · maksimal 8 MB</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Catatan</label>
+          <textarea name="note" placeholder="Opsional, tulis pesan jika diperlukan"></textarea>
+        </div>
+
+        <button class="primary-btn submit-btn" type="submit">
+          <span>KIRIM BUKTI</span>
+          <span class="arrow">→</span>
+        </button>
+
+        <div id="msg" class="msg"></div>
+      </form>
+    </section>
+
+    <footer class="footer">
+      <span>SANCUWEK CEO</span>
+      <span>•</span>
+      <span>Pembayaran diverifikasi manual oleh admin</span>
+    </footer>
+  </main>
+
+<script>
+const form = document.getElementById("donationForm");
+const msg = document.getElementById("msg");
+const proofInput = document.getElementById("proofInput");
+const fileName = document.getElementById("fileName");
+
+proofInput.addEventListener("change", () => {
+  fileName.textContent = proofInput.files[0] ? proofInput.files[0].name : "Pilih gambar bukti transfer";
+});
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const button = form.querySelector(".submit-btn");
+  msg.className = "msg";
+  button.disabled = true;
+  button.querySelector("span:first-child").textContent = "MENGIRIM...";
+
+  try {
+    const res = await fetch("/api/donations", {
+      method: "POST",
+      body: new FormData(form)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Gagal mengirim data.");
+
+    msg.textContent = "Bukti berhasil dikirim. Data kamu sudah masuk ke admin.";
+    msg.className = "msg ok show";
+    form.reset();
+    fileName.textContent = "Pilih gambar bukti transfer";
+  } catch (err) {
+    msg.textContent = err.message;
+    msg.className = "msg err show";
+  } finally {
+    button.disabled = false;
+    button.querySelector("span:first-child").textContent = "KIRIM BUKTI";
+  }
+});
+</script>
+<script src="/socket.io/socket.io.js"></script>
+
+<style>
+#toast{
+position:fixed;
+bottom:30px;
+left:50%;
+transform:translateX(-50%) translateY(80px);
+background:#111827;
+color:white;
+padding:14px 22px;
+border-radius:14px;
+opacity:0;
+transition:.3s;
+z-index:99999;
+font-size:15px;
+box-shadow:0 10px 30px #0005;
+}
+#toast.show{
+opacity:1;
+transform:translateX(-50%) translateY(0);
+}
+#toast.success{background:#16a34a}
+#toast.error{background:#dc2626}
+</style>
+
+<div id="toast"></div>
+
+<script>
+function showToast(msg,type="success"){
+ const t=document.getElementById("toast");
+ if(!t)return;
+ t.textContent=msg;
+ t.className="show "+type;
+ setTimeout(()=>t.className="",2500);
+}
+</script>
+</body>
+</html>
+
+<style>
+.typing-cursor{
+ border-right:3px solid #8b7cff;
+ animation:cursor .7s infinite;
+}
+@keyframes cursor{
+ 50%{border-color:transparent}
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+ const el=document.querySelector("h1");
+ if(!el) return;
+
+ const text=el.innerText;
+ let pos=0;
+ let hapus=false;
+
+ el.innerText="";
+ el.classList.add("typing-cursor");
+
+ function jalan(){
+   if(!hapus){
+     pos++;
+     el.innerText=text.substring(0,pos);
+
+     if(pos>=text.length){
+       hapus=true;
+       return setTimeout(jalan,2000);
+     }
+   }else{
+     pos--;
+     el.innerText=text.substring(0,pos);
+
+     if(pos<=0){
+       hapus=false;
+       return setTimeout(jalan,500);
+     }
+   }
+
+   setTimeout(jalan,120);
+ }
+ jalan();
+});
+</script>
+

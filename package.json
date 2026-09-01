@@ -1,0 +1,17 @@
+{
+  "name": "sancuwek-ceo",
+  "version": "5.0.0",
+  "description": "SANCUWEK CEO - web pembayaran QRIS dengan ID FF, bukti transfer, dan dashboard admin.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.4",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "socket.io": "^4.8.1",
+    "web-push": "^3.6.7"
+  }
+}
