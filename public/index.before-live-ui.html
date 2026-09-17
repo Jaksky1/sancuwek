@@ -6,6 +6,50 @@
   <meta name="theme-color" content="#070910">
   <title>SANCUWEK CEO</title>
   <link rel="stylesheet" href="/style.css">
+
+<style id="live-ui-v2">
+body{
+  background:
+    linear-gradient(rgba(3,5,12,.66),rgba(3,5,12,.76)),
+    url("/bg-live.jpg") center center/cover fixed no-repeat !important;
+  min-height:100vh;
+}
+
+h1{
+  text-shadow:0 5px 25px rgba(0,0,0,.65);
+}
+
+.qr-download-wrap{
+  text-align:center;
+  margin-top:12px;
+}
+
+.qr-download-text{
+  font-size:13px;
+  opacity:.8;
+  margin-bottom:8px;
+}
+
+.qr-download-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px 18px;
+  border-radius:14px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.14);
+  color:#fff;
+  text-decoration:none;
+  font-weight:700;
+  backdrop-filter:blur(10px);
+  transition:.2s;
+}
+
+.qr-download-btn:active{
+  transform:scale(.97);
+}
+</style>
+
 </head>
 <body class="public-page">
   <div class="ambient ambient-one"></div>
@@ -26,7 +70,7 @@
     <section class="hero-grid">
       <div class="glass hero-copy">
         <div class="eyebrow">BAYWAN 11 · 5K WIN FB</div>
-        <h1>BAYWAN 11 • 5K WIN FB<br><span>.</span></h1>
+        <h1>BAYWAN 11 • 2K<br><span>Sawer / Donet</span></h1>
         <p class="hero-description">
           Transfer langsung melalui QRIS. Setelah pembayaran selesai, kirim bukti transfer dan ID Free Fire kamu agar admin dapat melakukan pengecekan.
         </p>
@@ -67,6 +111,10 @@
 
         <div class="qris-frame">
           <img id="publicQris" src="/api/qris" alt="QRIS SANCUWEK CEO">
+<div class="qr-download-wrap">
+  <div class="qr-download-text">Sawer / Donet • BAYWAN 11 • 2K</div>
+  <a class="qr-download-btn" href="/api/qris" download="QRIS-SANCUWEK">⬇ Download QR</a>
+</div>
         </div>
         <p class="qris-help">Pastikan nama tujuan pembayaran sesuai sebelum melakukan transfer.</p>
       </aside>
