@@ -69,8 +69,9 @@ h1{
 
     <section class="hero-grid">
       <div class="glass hero-copy">
-        <div class="eyebrow">BAYWAN 11 · 5K WIN FB</div>
-        <h1>BAYWAN 11 • 2K<br><span>Sawer / Donet</span></h1>
+        <div class="eyebrow" id="heroEyebrow">BAYWAN 11 · 2K</div>
+        <h1 id="heroTyping">BAYWAN 11 • 2K
+Sawer / Donet</h1>
         <p class="hero-description">
           Transfer langsung melalui QRIS. Setelah pembayaran selesai, kirim bukti transfer dan ID Free Fire kamu agar admin dapat melakukan pengecekan.
         </p>
@@ -249,6 +250,61 @@ function showToast(msg,type="success"){
  setTimeout(()=>t.className="",2500);
 }
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const eyebrowEl = document.getElementById("heroEyebrow");
+  const typingEl = document.getElementById("heroTyping");
+
+  let eyebrow = "BAYWAN 11 · 2K";
+  let title = "BAYWAN 11 • 2K";
+  let subtitle = "Sawer / Donet";
+
+  try {
+    const res = await fetch("/api/site-settings?t=" + Date.now());
+    const data = await res.json();
+
+    eyebrow = data.eyebrow || eyebrow;
+    title = data.title || title;
+    subtitle = data.subtitle || subtitle;
+  } catch {}
+
+  eyebrowEl.textContent = eyebrow;
+
+  const text = title + "\n" + subtitle;
+  let pos = 0;
+  let deleting = false;
+
+  typingEl.textContent = "";
+  typingEl.classList.add("typing-cursor");
+  typingEl.style.whiteSpace = "pre-line";
+
+  function typeLoop() {
+    if (!deleting) {
+      pos++;
+      typingEl.textContent = text.substring(0, pos);
+
+      if (pos >= text.length) {
+        deleting = true;
+        return setTimeout(typeLoop, 1800);
+      }
+    } else {
+      pos--;
+      typingEl.textContent = text.substring(0, pos);
+
+      if (pos <= 0) {
+        deleting = false;
+        return setTimeout(typeLoop, 450);
+      }
+    }
+
+    setTimeout(typeLoop, 110);
+  }
+
+  typeLoop();
+});
+</script>
+
 </body>
 </html>
 
@@ -262,42 +318,7 @@ function showToast(msg,type="success"){
 }
 </style>
 
-<script>
-document.addEventListener("DOMContentLoaded",()=>{
- const el=document.querySelector("h1");
- if(!el) return;
 
- const text=el.innerText;
- let pos=0;
- let hapus=false;
-
- el.innerText="";
- el.classList.add("typing-cursor");
-
- function jalan(){
-   if(!hapus){
-     pos++;
-     el.innerText=text.substring(0,pos);
-
-     if(pos>=text.length){
-       hapus=true;
-       return setTimeout(jalan,2000);
-     }
-   }else{
-     pos--;
-     el.innerText=text.substring(0,pos);
-
-     if(pos<=0){
-       hapus=false;
-       return setTimeout(jalan,500);
-     }
-   }
-
-   setTimeout(jalan,120);
- }
- jalan();
-});
-</script>
 
 
 <style>

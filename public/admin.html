@@ -70,6 +70,7 @@
         <div class="side-caption">MENU</div>
         <button class="side-link active" data-target="donationSection">▦ <span>Donasi Masuk</span></button>
         <button class="side-link" data-target="qrisSection">◇ <span>Ubah QRIS</span></button>
+        <button class="side-link" data-target="siteTextSection">✎ <span>Teks Halaman</span></button>
         <button class="side-link" data-target="passwordSection">⚙ <span>Ubah Password</span></button>
       </aside>
 
@@ -159,7 +160,39 @@
           </div>
         </section>
 
-        <section id="passwordSection" class="panel glass">
+        
+        <section id="siteTextSection" class="panel glass">
+          <div class="panel-head">
+            <div>
+              <div class="section-kicker">USER PAGE</div>
+              <h2>Ubah teks halaman</h2>
+            </div>
+            <div class="panel-badge">LIVE TEXT</div>
+          </div>
+
+          <div class="field">
+            <label>Teks kecil atas</label>
+            <input id="siteEyebrow" placeholder="BAYWAN 11 · 2K">
+          </div>
+
+          <div class="field">
+            <label>Judul utama</label>
+            <input id="siteTitle" placeholder="BAYWAN 11 • 2K">
+          </div>
+
+          <div class="field">
+            <label>Teks bawah judul</label>
+            <input id="siteSubtitle" placeholder="Sawer / Donet">
+          </div>
+
+          <button id="saveSiteTextBtn" class="primary-btn full-btn">
+            SIMPAN TEKS
+          </button>
+
+          <div id="siteTextMsg" class="msg"></div>
+        </section>
+
+<section id="passwordSection" class="panel glass">
           <div class="panel-head">
             <div>
               <div class="section-kicker">SECURITY</div>
@@ -407,6 +440,7 @@ async function login() {
     dashboard.classList.remove("hidden");
     loginPassword.value = "";
     await loadAll();
+    await loadSiteSettings();
     await updateNotifStatus();
   } catch (err) {
     loginMsg.textContent = err.message;
@@ -608,6 +642,43 @@ async function updateQris() {
   }
 }
 
+
+async function loadSiteSettings() {
+  try {
+    const res = await fetch("/api/site-settings?t=" + Date.now());
+    const data = await res.json();
+
+    document.getElementById("siteEyebrow").value = data.eyebrow || "";
+    document.getElementById("siteTitle").value = data.title || "";
+    document.getElementById("siteSubtitle").value = data.subtitle || "";
+  } catch {}
+}
+
+async function saveSiteSettings() {
+  const box = document.getElementById("siteTextMsg");
+  box.className = "msg";
+
+  try {
+    await adminApi("/api/admin/site-settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eyebrow: document.getElementById("siteEyebrow").value,
+        title: document.getElementById("siteTitle").value,
+        subtitle: document.getElementById("siteSubtitle").value
+      })
+    });
+
+    box.textContent = "Teks halaman berhasil disimpan.";
+    box.className = "msg ok show";
+    showToast("Teks halaman diperbarui","success");
+  } catch (err) {
+    box.textContent = err.message;
+    box.className = "msg err show";
+  }
+}
+
+
 async function changePassword() {
   const newPassword = document.getElementById("newPassword").value;
   const confirmPassword = document.getElementById("confirmPassword").value;
@@ -652,6 +723,7 @@ document.getElementById("soundBtn").addEventListener("click", enableWebsiteSound
 document.getElementById("logoutBtn").addEventListener("click", () => logout(true));
 document.getElementById("refreshBtn").addEventListener("click", loadAll);
 document.getElementById("saveQrisBtn").addEventListener("click", updateQris);
+document.getElementById("saveSiteTextBtn").addEventListener("click", saveSiteSettings);
 document.getElementById("changePasswordBtn").addEventListener("click", changePassword);
 
 updateNotifStatus().catch(()=>{});
@@ -681,6 +753,7 @@ document.querySelectorAll(".side-link").forEach(btn => {
     loginGate.classList.add("hidden");
     dashboard.classList.remove("hidden");
     await loadAll();
+    await loadSiteSettings();
     await updateNotifStatus();
   } catch {}
 })();

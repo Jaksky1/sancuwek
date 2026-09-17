@@ -231,9 +231,69 @@ app.post("/api/admin/push/unsubscribe", adminAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+
+app.get("/api/site-settings", async (req, res) => {
+  const defaults = {
+    eyebrow: "BAYWAN 11 · 2K",
+    title: "BAYWAN 11 • 2K",
+    subtitle: "Sawer / Donet"
+  };
+
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select("eyebrow,title,subtitle")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Site settings read error:", error.message);
+    return res.json(defaults);
+  }
+
+  res.json({ ...defaults, ...(data || {}) });
+});
+
+app.put("/api/admin/site-settings", adminAuth, async (req, res) => {
+  const eyebrow = String(req.body.eyebrow || "").trim();
+  const title = String(req.body.title || "").trim();
+  const subtitle = String(req.body.subtitle || "").trim();
+
+  if (!eyebrow || !title || !subtitle) {
+    return res.status(400).json({ error: "Semua teks wajib diisi." });
+  }
+
+  const { data, error } = await supabase
+    .from("site_settings")
+    .upsert({
+      id: 1,
+      eyebrow,
+      title,
+      subtitle,
+      updated_at: new Date().toISOString()
+    }, { onConflict: "id" })
+    .select("eyebrow,title,subtitle")
+    .single();
+
+  if (error) {
+    console.error("Site settings save error:", error.message);
+    return res.status(500).json({ error: "Gagal menyimpan teks." });
+  }
+
+  res.json({ ok: true, ...data });
+});
+
 app.get("/api/qris", (req, res) => {
   const file = getCurrentQrisFile();
-  if (file) return res.sendFile(file);
+
+  if (file) {
+    if (req.query.download === "1") {
+      const ext = path.extname(file) || ".png";
+      return res.download(file, "QRIS-SANCUWEK" + ext);
+    }
+
+    return res.sendFile(file);
+  }
+
   return res.sendFile(path.join(__dirname, "public", "qris-placeholder.svg"));
 });
 
