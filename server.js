@@ -16,6 +16,8 @@ const CONFIG_FILE = path.join(__dirname, "data", "config.json");
 const UPLOAD_DIR = path.join(__dirname, "uploads");
 const QRIS_DIR = path.join(__dirname, "data", "qris");
 const QRIS_FILE = path.join(QRIS_DIR, "current");
+const QRIS_BUCKET = "proofs";
+const QRIS_OBJECT = "qris/current";
 const PUSH_FILE = path.join(__dirname, "data", "push-subscriptions.json");
 const VAPID_FILE = path.join(__dirname, "data", "vapid.json");
 
@@ -155,16 +157,8 @@ const upload = multer({
   }
 });
 
-const qrisStorage = multer.diskStorage({
-  destination: (_, __, cb) => cb(null, QRIS_DIR),
-  filename: (_, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `current${ext}`);
-  }
-});
-
 const qrisUpload = multer({
-  storage: qrisStorage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_, file, cb) => {
     const allowed = ["image/jpeg", "image/png", "image/webp"];
@@ -282,7 +276,45 @@ app.put("/api/admin/site-settings", adminAuth, async (req, res) => {
   res.json({ ok: true, ...data });
 });
 
-app.get("/api/qris", (req, res) => {
+app.get("/api/qris", async (req, res) => {
+  try {
+    const { data, error } = await supabase.storage
+      .from(QRIS_BUCKET)
+      .download(QRIS_OBJECT);
+
+    if (!error && data) {
+      const buffer = Buffer.from(await data.arrayBuffer());
+      const mime = data.type || "image/png";
+
+      const extByMime = {
+        "image/jpeg": ".jpg",
+        "image/png": ".png",
+        "image/webp": ".webp"
+      };
+
+      const ext = extByMime[mime] || ".png";
+
+      res.setHeader("Cache-Control", "no-store, max-age=0");
+      res.setHeader("Content-Type", mime);
+
+      if (req.query.download === "1") {
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="QRIS-SANCUWEK${ext}"`
+        );
+      }
+
+      return res.send(buffer);
+    }
+
+    if (error) {
+      console.error("QRIS Supabase read error:", error.message);
+    }
+  } catch (err) {
+    console.error("QRIS Supabase read failed:", err.message);
+  }
+
+  // fallback QR lama selama belum upload ulang dari admin
   const file = getCurrentQrisFile();
 
   if (file) {
@@ -294,27 +326,49 @@ app.get("/api/qris", (req, res) => {
     return res.sendFile(file);
   }
 
-  return res.sendFile(path.join(__dirname, "public", "qris-placeholder.svg"));
+  return res.sendFile(
+    path.join(__dirname, "public", "qris-placeholder.svg")
+  );
 });
 
-app.post("/api/admin/qris", adminAuth, (req, res, next) => {
-  const old = getCurrentQrisFile();
-  qrisUpload.single("qris")(req, res, (err) => {
-    if (err) return next(err);
-    if (!req.file) return res.status(400).json({ error: "Pilih gambar QRIS terlebih dahulu." });
-
-    // Remove older QRIS if extension changed
-    if (old && old !== req.file.path && fs.existsSync(old)) {
-      try { fs.unlinkSync(old); } catch {}
+app.post(
+  "/api/admin/qris",
+  adminAuth,
+  qrisUpload.single("qris"),
+  async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({
+        error: "Pilih gambar QRIS terlebih dahulu."
+      });
     }
+
+    const { error } = await supabase.storage
+      .from(QRIS_BUCKET)
+      .upload(QRIS_OBJECT, req.file.buffer, {
+        contentType: req.file.mimetype,
+        cacheControl: "0",
+        upsert: true
+      });
+
+    if (error) {
+      console.error("QRIS Supabase upload error:", error.message);
+
+      return res.status(500).json({
+        error: "Gagal menyimpan QRIS permanen."
+      });
+    }
+
+    const url = `/api/qris?t=${Date.now()}`;
+
+    io.emit("qris-updated", { url });
 
     res.json({
       ok: true,
-      message: "QRIS berhasil diperbarui.",
-      url: `/api/qris?t=${Date.now()}`
+      message: "QRIS berhasil diperbarui dan disimpan permanen.",
+      url
     });
-  });
-});
+  }
+);
 
 app.post("/api/donations", upload.single("proof"), async (req, res) => {
   const { ffId, amount, note } = req.body;
