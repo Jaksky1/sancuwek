@@ -154,7 +154,14 @@
                 <label>File QRIS baru</label>
                 <input id="qrisFile" type="file" accept="image/jpeg,image/png,image/webp">
               </div>
-              <button id="saveQrisBtn" class="primary-btn full-btn">SIMPAN QRIS BARU</button>
+              <button id="saveQrisBtn" class="primary-btn full-btn">TAMBAH / GANTI QRIS</button>
+
+              <button id="deleteQrisBtn"
+                      class="danger-btn full-btn"
+                      style="margin-top:10px">
+                HAPUS QRIS
+              </button>
+
               <div id="qrisMsg" class="msg"></div>
             </div>
           </div>
@@ -643,6 +650,40 @@ async function updateQris() {
 }
 
 
+
+async function deleteQris() {
+  const ok = await showConfirm(
+    "Hapus QRIS pembayaran sekarang?"
+  );
+
+  if (!ok) return;
+
+  const box = document.getElementById("qrisMsg");
+
+  try {
+    const data = await adminApi("/api/admin/qris", {
+      method: "DELETE"
+    });
+
+    document.getElementById("adminQrisPreview").src =
+      "/api/qris?t=" + Date.now();
+
+    document.getElementById("qrisFile").value = "";
+
+    box.textContent = data.message || "QRIS berhasil dihapus.";
+    box.className = "msg ok show";
+
+    showToast("QRIS berhasil dihapus", "success");
+
+  } catch (err) {
+    box.textContent = err.message;
+    box.className = "msg err show";
+
+    showToast("Gagal menghapus QRIS", "error");
+  }
+}
+
+
 async function loadSiteSettings() {
   try {
     const res = await fetch("/api/site-settings?t=" + Date.now());
@@ -723,6 +764,7 @@ document.getElementById("soundBtn").addEventListener("click", enableWebsiteSound
 document.getElementById("logoutBtn").addEventListener("click", () => logout(true));
 document.getElementById("refreshBtn").addEventListener("click", loadAll);
 document.getElementById("saveQrisBtn").addEventListener("click", updateQris);
+document.getElementById("deleteQrisBtn").addEventListener("click", deleteQris);
 document.getElementById("saveSiteTextBtn").addEventListener("click", saveSiteSettings);
 document.getElementById("changePasswordBtn").addEventListener("click", changePassword);
 

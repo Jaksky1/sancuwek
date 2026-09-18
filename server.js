@@ -370,6 +370,48 @@ app.post(
   }
 );
 
+
+app.delete("/api/admin/qris", adminAuth, async (req, res) => {
+  const { error } = await supabase.storage
+    .from(QRIS_BUCKET)
+    .remove([QRIS_OBJECT]);
+
+  if (error) {
+    console.error("QRIS Supabase delete error:", error.message);
+    return res.status(500).json({
+      error: "Gagal menghapus QRIS."
+    });
+  }
+
+  // Bersihkan QRIS lokal lama jika masih ada
+  try {
+    if (fs.existsSync(QRIS_DIR)) {
+      const files = fs.readdirSync(QRIS_DIR)
+        .filter(f => /^current\.(png|jpg|jpeg|webp)$/i.test(f));
+
+      for (const file of files) {
+        const full = path.join(QRIS_DIR, file);
+        if (fs.existsSync(full)) fs.unlinkSync(full);
+      }
+    }
+  } catch (err) {
+    console.error("Cleanup QRIS lokal:", err.message);
+  }
+
+  const url = `/api/qris?t=${Date.now()}`;
+
+  io.emit("qris-updated", {
+    url,
+    deleted: true
+  });
+
+  res.json({
+    ok: true,
+    message: "QRIS berhasil dihapus.",
+    url
+  });
+});
+
 app.post("/api/donations", upload.single("proof"), async (req, res) => {
   const { ffId, amount, note } = req.body;
 
