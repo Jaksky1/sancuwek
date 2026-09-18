@@ -180,13 +180,58 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(UPLOAD_DIR));
 
-function adminAuth(req, res, next) {
-  const password = req.headers["x-admin-password"] || "";
-  const config = readConfig();
-  if (!password || sha256(password) !== config.adminPasswordHash) {
-    return res.status(401).json({ error: "Password admin salah." });
+async function getAdminPasswordHash() {
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select("admin_password_hash")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Admin password read error:", error.message);
+    throw new Error("Gagal membaca password admin.");
   }
-  next();
+
+  if (data?.admin_password_hash) {
+    return data.admin_password_hash;
+  }
+
+  const initial = process.env.ADMIN_PASSWORD || "admin123";
+  const hash = sha256(initial);
+
+  const { error: saveError } = await supabase
+    .from("site_settings")
+    .upsert({
+      id: 1,
+      admin_password_hash: hash
+    }, { onConflict: "id" });
+
+  if (saveError) {
+    console.error("Admin password init error:", saveError.message);
+    throw new Error("Gagal membuat password admin.");
+  }
+
+  return hash;
+}
+
+async function adminAuth(req, res, next) {
+  try {
+    const password = req.headers["x-admin-password"] || "";
+    const storedHash = await getAdminPasswordHash();
+
+    if (!password || sha256(password) !== storedHash) {
+      return res.status(401).json({
+        error: "Password admin salah."
+      });
+    }
+
+    next();
+  } catch (err) {
+    console.error("Admin auth error:", err.message);
+    res.status(500).json({
+      error: "Sistem login admin sedang bermasalah."
+    });
+  }
 }
 
 
@@ -615,20 +660,40 @@ app.delete("/api/admin/donations/:id", adminAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
-app.post("/api/admin/change-password", adminAuth, (req, res) => {
+app.post("/api/admin/change-password", adminAuth, async (req, res) => {
   const { newPassword, confirmPassword } = req.body;
 
   if (!newPassword || newPassword.length < 6) {
-    return res.status(400).json({ error: "Password baru minimal 6 karakter." });
-  }
-  if (newPassword !== confirmPassword) {
-    return res.status(400).json({ error: "Konfirmasi password tidak sama." });
+    return res.status(400).json({
+      error: "Password baru minimal 6 karakter."
+    });
   }
 
-  const config = readConfig();
-  config.adminPasswordHash = sha256(newPassword);
-  writeConfig(config);
-  res.json({ ok: true, message: "Password admin berhasil diubah." });
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({
+      error: "Konfirmasi password tidak sama."
+    });
+  }
+
+  const { error } = await supabase
+    .from("site_settings")
+    .upsert({
+      id: 1,
+      admin_password_hash: sha256(newPassword),
+      updated_at: new Date().toISOString()
+    }, { onConflict: "id" });
+
+  if (error) {
+    console.error("Change password error:", error.message);
+    return res.status(500).json({
+      error: "Gagal menyimpan password baru."
+    });
+  }
+
+  res.json({
+    ok: true,
+    message: "Password admin berhasil diubah dan tersimpan permanen."
+  });
 });
 
 app.use((err, req, res, next) => {
