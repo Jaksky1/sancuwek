@@ -1,0 +1,226 @@
+/* ===== SANCUWEK UI UPGRADE ===== */
+
+.public-page,
+.admin-page{
+  --u-purple:#7c5cff;
+  --u-blue:#5b7cff;
+  --u-green:#35d384;
+}
+
+.public-page{
+  background:
+    linear-gradient(rgba(3,5,12,.62),rgba(3,5,12,.82)),
+    url("/bg-live.jpg") center/cover fixed no-repeat!important;
+}
+
+.public-page::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    radial-gradient(circle at 15% 15%,rgba(124,92,255,.22),transparent 30%),
+    radial-gradient(circle at 85% 20%,rgba(91,124,255,.16),transparent 28%);
+  animation:bgPulse 7s ease-in-out infinite alternate;
+}
+
+@keyframes bgPulse{
+  from{filter:brightness(.95)}
+  to{filter:brightness(1.08)}
+}
+
+.public-page .glass,
+.admin-page .glass,
+.admin-page .panel{
+  border:1px solid rgba(255,255,255,.09)!important;
+  background:linear-gradient(
+    145deg,
+    rgba(18,24,42,.88),
+    rgba(8,12,24,.86)
+  )!important;
+  backdrop-filter:blur(22px)!important;
+  box-shadow:
+    0 28px 80px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.04)!important;
+}
+
+.public-page .hero-copy,
+.public-page .qris-card,
+.public-page .form-panel,
+.admin-page .panel,
+.admin-page .stat-card{
+  transition:
+    transform .28s ease,
+    border-color .28s ease,
+    box-shadow .28s ease;
+}
+
+@media(hover:hover){
+  .public-page .hero-copy:hover,
+  .public-page .qris-card:hover,
+  .public-page .form-panel:hover,
+  .admin-page .panel:hover,
+  .admin-page .stat-card:hover{
+    transform:translateY(-4px);
+    border-color:rgba(124,92,255,.28)!important;
+    box-shadow:
+      0 35px 95px rgba(0,0,0,.45),
+      0 0 50px rgba(124,92,255,.07)!important;
+  }
+}
+
+.public-page .hero-copy h1{
+  background:linear-gradient(
+    90deg,
+    #fff,
+    #c7bcff,
+    #7fa2ff,
+    #fff
+  );
+  background-size:220% auto;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  animation:heroShine 6s linear infinite;
+}
+
+@keyframes heroShine{
+  to{background-position:220% center}
+}
+
+.public-page .status-dot{
+  animation:statusPulse 1.7s infinite;
+}
+
+@keyframes statusPulse{
+  0%{box-shadow:0 0 0 0 rgba(53,211,132,.5)}
+  70%{box-shadow:0 0 0 10px rgba(53,211,132,0)}
+  100%{box-shadow:0 0 0 0 rgba(53,211,132,0)}
+}
+
+.public-page .qris-frame{
+  position:relative;
+  border-radius:26px!important;
+  box-shadow:
+    0 24px 60px rgba(0,0,0,.42),
+    0 0 45px rgba(124,92,255,.10)!important;
+  animation:qrisGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes qrisGlow{
+  from{transform:scale(1)}
+  to{transform:scale(1.012)}
+}
+
+.public-page .primary-btn,
+.public-page .qr-download-btn{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(
+    135deg,
+    var(--u-purple),
+    var(--u-blue)
+  )!important;
+  box-shadow:0 14px 35px rgba(91,92,255,.24);
+}
+
+.public-page .primary-btn::after,
+.public-page .qr-download-btn::after{
+  content:"";
+  position:absolute;
+  top:-60%;
+  left:-70%;
+  width:35%;
+  height:220%;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.35),
+    transparent
+  );
+  transform:rotate(25deg);
+  transition:left .6s ease;
+}
+
+.public-page .primary-btn:hover::after,
+.public-page .qr-download-btn:hover::after{
+  left:130%;
+}
+
+.public-page input,
+.public-page textarea,
+.admin-page input,
+.admin-page textarea,
+.admin-page select{
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .2s ease;
+}
+
+.public-page input:focus,
+.public-page textarea:focus,
+.admin-page input:focus,
+.admin-page textarea:focus,
+.admin-page select:focus{
+  transform:translateY(-1px);
+  border-color:rgba(124,92,255,.6)!important;
+  box-shadow:0 0 0 4px rgba(124,92,255,.09)!important;
+}
+
+.reveal-up{
+  opacity:0;
+  transform:translateY(25px) scale(.985);
+}
+
+.reveal-up.show{
+  opacity:1;
+  transform:none;
+  transition:
+    opacity .65s ease,
+    transform .65s cubic-bezier(.2,.8,.2,1);
+}
+
+.admin-page .side-link.active{
+  box-shadow:inset 3px 0 0 var(--u-purple);
+}
+
+.admin-page #deleteQrisBtn{
+  min-height:48px;
+  border:1px solid rgba(255,93,112,.25);
+  transition:.2s ease;
+}
+
+.admin-page #deleteQrisBtn:hover{
+  transform:translateY(-2px);
+  background:rgba(255,93,112,.16);
+}
+
+@media(max-width:700px){
+  .public-page .hero-copy h1{
+    font-size:42px!important;
+  }
+
+  .public-page .hero-copy,
+  .public-page .qris-card,
+  .public-page .form-panel{
+    border-radius:24px!important;
+  }
+
+  .public-page .qr-download-btn{
+    width:100%;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  *{
+    animation:none!important;
+    transition:none!important;
+  }
+
+  .reveal-up{
+    opacity:1!important;
+    transform:none!important;
+  }
+}
