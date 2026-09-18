@@ -116,7 +116,7 @@ Sawer / Donet</h1>
 
 <div class="qr-download-wrap">
   <div class="qr-download-text">Sawer / Donet • BAYWAN 11 • 2K</div>
-  <a class="qr-download-btn" href="/api/qris" download="QRIS-SANCUWEK.jpg">⬇ DOWNLOAD QRIS</a>
+  <a class="qr-download-btn" href="/api/qris?download=1" download="QRIS-SANCUWEK">⬇ DOWNLOAD QRIS</a>
 </div>
         <p class="qris-help">Pastikan nama tujuan pembayaran sesuai sebelum melakukan transfer.</p>
       </aside>
@@ -303,6 +303,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   typeLoop();
 });
+</script>
+
+
+<script>
+if (typeof io !== "undefined") {
+  const qrisSocket = io();
+
+  qrisSocket.on("qris-updated", function () {
+    const img = document.getElementById("publicQris");
+    if (img) img.src = "/api/qris?t=" + Date.now();
+  });
+}
 </script>
 
 </body>
