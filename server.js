@@ -276,6 +276,34 @@ app.put("/api/admin/site-settings", adminAuth, async (req, res) => {
   res.json({ ok: true, ...data });
 });
 
+
+app.get("/api/qris/status", async (req, res) => {
+  try {
+    const { data, error } = await supabase.storage
+      .from(QRIS_BUCKET)
+      .list("qris", {
+        limit: 20,
+        search: "current"
+      });
+
+    if (error) {
+      console.error("QRIS status error:", error.message);
+      return res.json({ available: false });
+    }
+
+    const available =
+      Array.isArray(data) &&
+      data.some(x => x.name === "current");
+
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ available });
+
+  } catch (err) {
+    console.error("QRIS status failed:", err.message);
+    res.json({ available: false });
+  }
+});
+
 app.get("/api/qris", async (req, res) => {
   try {
     const { data, error } = await supabase.storage
@@ -455,7 +483,7 @@ app.post("/api/donations", upload.single("proof"), async (req, res) => {
     proof: publicUrl.publicUrl,
     status: "Menunggu"
   };
-  const { error } = await supabase
+  const { data: insertedDonation, error } = await supabase
     .from("donations")
     .insert({
       ff_id: item.ffId,
@@ -463,12 +491,26 @@ app.post("/api/donations", upload.single("proof"), async (req, res) => {
       note: item.note,
       proof_url: item.proof,
       status: item.status
-    });
+    })
+    .select("id,created_at")
+    .single();
 
   if (error) {
     console.error("Insert Supabase error:", error.message);
-    return res.status(500).json({ error: "Gagal menyimpan donasi." });
+
+    try {
+      await supabase.storage
+        .from("proofs")
+        .remove([fileName]);
+    } catch {}
+
+    return res.status(500).json({
+      error: "Gagal menyimpan donasi."
+    });
   }
+
+  item.id = insertedDonation?.id;
+  item.createdAt = insertedDonation?.created_at;
 
   sendPushToAdmins({
     title: "Pembayaran baru masuk",
@@ -515,6 +557,12 @@ app.patch("/api/admin/donations/:id", adminAuth, async (req, res) => {
 
 app.delete("/api/admin/donations/:id", adminAuth, async (req, res) => {
 
+  const { data: existing } = await supabase
+    .from("donations")
+    .select("proof_url")
+    .eq("id", req.params.id)
+    .maybeSingle();
+
   const { error } = await supabase
     .from("donations")
     .delete()
@@ -522,8 +570,47 @@ app.delete("/api/admin/donations/:id", adminAuth, async (req, res) => {
 
   if (error) {
     console.error("Delete error:", error.message);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({
+      error: error.message
+    });
   }
+
+  try {
+    const proofUrl = existing?.proof_url || "";
+    const marker = "/proofs/";
+    const pos = proofUrl.indexOf(marker);
+
+    if (pos !== -1) {
+      const objectPath = decodeURIComponent(
+        proofUrl
+          .substring(pos + marker.length)
+          .split("?")[0]
+      );
+
+      if (objectPath) {
+        const { error: storageError } =
+          await supabase.storage
+            .from("proofs")
+            .remove([objectPath]);
+
+        if (storageError) {
+          console.error(
+            "Proof cleanup error:",
+            storageError.message
+          );
+        }
+      }
+    }
+  } catch (err) {
+    console.error(
+      "Proof cleanup failed:",
+      err.message
+    );
+  }
+
+  io.emit("donation-deleted", {
+    id: req.params.id
+  });
 
   res.json({ ok: true });
 });
